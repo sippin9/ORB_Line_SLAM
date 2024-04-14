@@ -618,7 +618,7 @@ bool Optimizer::PoseOptimizationWithLine(Frame *pFrame)
     {
         DT     = Converter::toMatrix4d(pFrame->mTcw) * Converter::toInvMatrix4d(pFrame->mTcw_prev);
         // DT     = expmap_se3(logmap_se3( inverse_se3( pFrame->DT ) )); //pFrame->DT;
-        DT_cov = pFrame->DT_cov;
+        DT_cov << pFrame->DT_cov;
         // double e_prev = pFrame->err_norm;
         // if( !isGoodSolution(DT,DT_cov,e_prev) )
         //     DT = Matrix4d::Identity();

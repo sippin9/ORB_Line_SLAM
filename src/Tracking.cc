@@ -312,7 +312,6 @@ void Tracking::Track()
     }
     else if(mState==NOT_INITIALIZED && mpMap->GetMaxKFid() > 0)
     {
-
         if(mSensor==System::STEREO || mSensor==System::RGBD)
             StereoInitializationWithMap();
         else
@@ -329,6 +328,7 @@ void Tracking::Track()
     }
     else
     {
+        cout<<"Tracking Initialized"<<endl;
         // System is initialized. Track Frame.
         bool bOK;
 
@@ -512,8 +512,11 @@ void Tracking::Track()
 
             // Check if we need to insert a new keyframe
             if(NeedNewKeyFrame())
+            {
+                cout<<"A key frame needed"<<endl;
                 CreateNewKeyFrame();
-
+                cout<<"Successfully create a key frame"<<endl;
+            }
             // We allow points with high innovation (considererd outliers by the Huber Function)
             // pass to the new keyframe, so that bundle adjustment will finally decide
             // if they are outliers or not. We don't want next frame to estimate its position
@@ -715,14 +718,10 @@ void Tracking::MonocularInitialization()
             mvbPrevMatched.resize(mCurrentFrame.mvKeysUn.size());
             for(size_t i=0; i<mCurrentFrame.mvKeysUn.size(); i++)
                 mvbPrevMatched[i]=mCurrentFrame.mvKeysUn[i].pt;
-
             if(mpInitializer)
                 delete mpInitializer;
-
             mpInitializer =  new Initializer(mCurrentFrame,1.0,200);
-
             fill(mvIniMatches.begin(),mvIniMatches.end(),-1);
-
             return;
         }
     }
@@ -764,6 +763,7 @@ void Tracking::MonocularInitialization()
                 }
             }
 
+
             // Set Frame Poses
             mInitialFrame.SetPose(cv::Mat::eye(4,4,CV_32F));
             cv::Mat Tcw = cv::Mat::eye(4,4,CV_32F);
@@ -782,9 +782,10 @@ void Tracking::CreateInitialMapMonocular()
     KeyFrame* pKFini = new KeyFrame(mInitialFrame,mpMap,mpKeyFrameDB);
     KeyFrame* pKFcur = new KeyFrame(mCurrentFrame,mpMap,mpKeyFrameDB);
 
-
+    cout<<"BoW fail?"<<endl;
     pKFini->ComputeBoW();
     pKFcur->ComputeBoW();
+    cout<<"BoW succeed!"<<endl;
 
     // Insert KFs in the map
     mpMap->AddKeyFrame(pKFini);

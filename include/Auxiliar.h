@@ -24,7 +24,6 @@
 
 #include <iostream>
 
-#include <cv.h>
 #include <opencv2/features2d/features2d.hpp>
 #include <line_descriptor_custom.hpp>
 #include <line_descriptor/descriptor_custom.hpp>

@@ -57,6 +57,7 @@ void LocalMapping::Run()
         // Check if there are keyframes in the queue
         if(CheckNewKeyFrames())
         {
+
             // BoW conversion and insertion in Map
             ProcessNewKeyFrame();
 
@@ -135,6 +136,7 @@ void LocalMapping::ProcessNewKeyFrame()
 
     // Compute Bags of Words structures
     mpCurrentKeyFrame->ComputeBoW();
+    cout << "Success BoW" << endl;
 
     // Associate MapPoints to the new keyframe and update normal and descriptor
     const vector<MapPoint*> vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();

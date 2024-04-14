@@ -51,6 +51,8 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
 {
     mnId=nNextId++;
 
+    cout << "KeyFrame ID: " << mnId << endl;
+
     mGrid.resize(mnGridCols);
     for(int i=0; i<mnGridCols;i++)
     {
@@ -90,7 +92,7 @@ KeyFrame::KeyFrame(InitKeyFrame& initkf, Map* pMap, KeyFrameDatabase* pKFDB, vec
         for(int j=0; j<mnGridRows; j++)
             mGrid[i][j] = initkf.vGrid[i][j];
     }
-    //cout << "KeyFrame ID: " << mnId << endl;
+    cout << "KeyFrame ID: " << mnId << endl;
 }
 
 void KeyFrame::ComputeBoW()

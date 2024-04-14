@@ -14,8 +14,8 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
 else()
     message("==> CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  -O3 -march=native ")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O3 -march=native")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  ")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ")
 endif()
 
 # Check C++11 or C++0x support
@@ -36,7 +36,7 @@ endif()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-find_package(OpenCV 3.4 QUIET)
+find_package(OpenCV 4)
 if(NOT OpenCV_FOUND)
    find_package(OpenCV 2.4.3 QUIET)
    if(NOT OpenCV_FOUND)
@@ -113,8 +113,8 @@ Examples/PL/PL_stereo_kitti.cc)
 target_link_libraries(PL_stereo_kitti ${PROJECT_NAME})
 
 #PlaceRecognition
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/PlaceRecognition)
-add_executable(placeRecognition
-Examples/PlaceRecognition/placeRecognition.cc)
-target_link_libraries(placeRecognition ${PROJECT_NAME})
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/PlaceRecognition)
+#add_executable(placeRecognition
+#Examples/PlaceRecognition/placeRecognition.cc)
+#target_link_libraries(placeRecognition ${PROJECT_NAME})
 
