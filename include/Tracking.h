@@ -62,6 +62,11 @@ public:
              KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor);
 
     // Preprocess the input and call Track(). Extract features and performs stereo matching.
+    static cv::Mat PreProcess(const cv::Mat &im);
+    static cv::Mat PreGamma(const cv::Mat &imRectLeft, float gamma);
+    static cv::Mat guidedFilter(const cv::Mat &srcMat, int radius, double eps);
+    static cv::Mat AdaptiveFilter(const cv::Mat &vv);
+
     cv::Mat GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRectRight, const double &timestamp);
     cv::Mat GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const double &timestamp);
     cv::Mat GrabImageMonocular(const cv::Mat &im, const double &timestamp);
