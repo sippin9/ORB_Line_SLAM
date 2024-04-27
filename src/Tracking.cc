@@ -313,7 +313,7 @@ cv::Mat Tracking::AdaptiveFilter(const cv::Mat& vv)
         }
     s.convertTo(s, CV_64FC1);
 
-    cv::Mat imageresult = cv::Mat::zeros(v.size(), CV_8U);
+    cv::Mat imageresult = cv::Mat::zeros(v.size(), CV_8UC1);
     for(int y = 0; y < row; ++y)
         for(int x = 0; x < col; ++x)
         {
@@ -335,18 +335,32 @@ cv::Mat Tracking::AdaptiveFilter(const cv::Mat& vv)
     return imageresult;
 }
 
-cv::Mat Tracking::PreProcess(const cv::Mat &im)
+cv::Mat Tracking::PreProcess(const cv::Mat& im)
 {
+    // Get the dimensions of the input image
+    int width = im.cols;
+    int height = im.rows;
+
+    // Define the region of interest (ROI) coordinates
+    int roiX = (width - 640) / 2;
+    int roiY = (height - 304) / 2;
+    int roiWidth = 640;
+    int roiHeight = 304;
+
+    // Create a ROI (Region of Interest) from the input image
+    cv::Rect roiRect(roiX, roiY, roiWidth, roiHeight);
+    cv::Mat inputImage = im(roiRect).clone();
+
     double valMin, valMax;
-    cv::Mat mImGrayP = im;
+    cv::Mat mImGrayP = inputImage;
     cv::minMaxLoc(mImGrayP, &valMin, &valMax);
 
     cv::Mat mImGrayRead = cv::Mat::zeros(mImGrayP.size(), CV_8U);
-    for(int y = 0; y < mImGrayP.rows; ++y)
-        for(int x = 0; x < mImGrayP.cols; ++x)
+    for (int y = 0; y < mImGrayP.rows; ++y)
+        for (int x = 0; x < mImGrayP.cols; ++x)
         {
-            double nn = (mImGrayP.at<ushort>(y,x) - valMin) * 255 / (valMax - valMin);
-            mImGrayRead.at<uchar>(y,x) = (int)nn;
+            double nn = (mImGrayP.at<ushort>(y, x) - valMin) * 255 / (valMax - valMin);
+            mImGrayRead.at<uchar>(y, x) = (int)nn;
         }
 
     cv::Mat mImGrayGamma = PreGamma(mImGrayRead, 0.65);
@@ -356,10 +370,10 @@ cv::Mat Tracking::PreProcess(const cv::Mat &im)
 
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
     clahe->setClipLimit(8); // (int)(4.(88)/256)
-    clahe->setTilesGridSize(cv::Size(16, 16)); // 将图像分为8*8块
+    clahe->setTilesGridSize(cv::Size(8, 8)); // 将图像分为8*8块
     clahe->apply(mImGrayRead, mImGrayHist);
 
-    cv::Mat mImGrayAdapt = 0.8 * mImGrayHist + 0.2 * mImGrayGamma;
+    cv::Mat mImGrayAdapt = 0.9 * mImGrayHist + 0.1 * mImGrayGamma;
 
     //Adaptive FPN filter useful for dark images
     mImGrayP = AdaptiveFilter(mImGrayAdapt);
@@ -371,21 +385,57 @@ cv::Mat Tracking::PreProcess(const cv::Mat &im)
     return mImGrayP;
 }
 
+cv::Mat Tracking::PreProcess1(const cv::Mat& inputImage) {
+    static double fx1, fy1, fx2, fy2;
+    fx1 = 429.433;
+    fx2 = 788.413;
+    fy1 = 429.531;
+    fy2 = 790.926;
+
+    cv::Mat scaledImage;
+    cv::resize(inputImage, scaledImage, cv::Size(), fx1 / fx2, fy1 / fy2);
+
+    // Get the dimensions of the input image
+    int width = scaledImage.cols;
+    int height = scaledImage.rows;
+
+    // Define the region of interest (ROI) coordinates
+    int roiX = (width - 640) / 2;
+    int roiY = (height - 304) / 2;
+    int roiWidth = 640;
+    int roiHeight = 304;
+
+    // Create a ROI (Region of Interest) from the input image
+    cv::Rect roiRect(roiX, roiY, roiWidth, roiHeight);
+    cv::Mat croppedImage = scaledImage(roiRect).clone();
+
+    croppedImage.convertTo(croppedImage, CV_8U);
+
+    //cv::Mat denoisedImage;
+    //cv::medianBlur(croppedImage, denoisedImage, 5);
+    //cv::bilateralFilter(croppedImage, denoisedImage, 9, 75, 75);
+    //cv::fastNlMeansDenoising(croppedImage, denoisedImage, 10, 7, 21);
+
+    // Return the cropped image
+    return croppedImage;
+}
+
 cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const double &timestamp)
 {
-    mImGray = imRectLeft;
-    cv::Mat imGrayRight = imRectRight;
+    mImGray = cv::Mat::zeros(imRectLeft.size(), CV_8U);
+    cv::Mat imGrayRight = cv::Mat::zeros(imRectRight.size(), CV_8U);
 
     //Read LWIR images for RectLeft, RGB images for Rectright
-    if(mbRGB)
+    if(imRectRight.channels()>1)
     {
         mImGray = PreProcess(imRectLeft);
-        cvtColor(imGrayRight,imGrayRight,CV_RGB2GRAY);
+        cvtColor(imRectRight,imGrayRight,CV_RGB2GRAY);
+        imGrayRight = PreProcess1(imGrayRight);
     }
     else
     {
         mImGray = PreProcess(imRectLeft);
-        cvtColor(imGrayRight,imGrayRight,CV_BGR2GRAY);
+        imGrayRight = PreProcess1(imGrayRight);
     }
 
     /*if(mImGray.channels()==3)
@@ -419,7 +469,12 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRe
         mpLineextractorLeft,mpLineextractorRight,mpORBVocabulary,mpLineVocabulary,
         mK,mDistCoef,mbf,mThDepth);
     // cout<<"[Debug] mCurrentFrame.mnId "<<mCurrentFrame.mnId<<endl;
+
+    cout<<"Frame created\n";
+
     Track();
+
+    cout<<"Track ended\n";
 
     return mCurrentFrame.mTcw.clone();
 }

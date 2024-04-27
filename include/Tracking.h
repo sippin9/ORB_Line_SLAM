@@ -63,6 +63,7 @@ public:
 
     // Preprocess the input and call Track(). Extract features and performs stereo matching.
     static cv::Mat PreProcess(const cv::Mat &im);
+    static cv::Mat PreProcess1(const cv::Mat &im);
     static cv::Mat PreGamma(const cv::Mat &imRectLeft, float gamma);
     static cv::Mat guidedFilter(const cv::Mat &srcMat, int radius, double eps);
     static cv::Mat AdaptiveFilter(const cv::Mat &vv);

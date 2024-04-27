@@ -160,15 +160,18 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeSt
     mvLevelSigma2 = mpORBextractorLeft->GetScaleSigmaSquares();
     mvInvLevelSigma2 = mpORBextractorLeft->GetInverseScaleSigmaSquares();
 
+
     // ORB extraction && LineFeatures extraction
     thread threadLeft(&Frame::ExtractORB,this,0,imLeft);
     thread threadRight(&Frame::ExtractORB,this,1,imRight);
     thread threadLeft_Line(&Frame::ExtractLine,this,0,imLeft);
     thread threadRight_Line(&Frame::ExtractLine,this,1,imRight);
-    threadLeft.join();
-    threadRight.join();
+
     threadLeft_Line.join();
     threadRight_Line.join();
+
+    threadLeft.join();
+    threadRight.join();
 
     N = mvKeys.size();
     N_l = mvKeys_Line.size();       // for now
@@ -176,6 +179,7 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeSt
     if(mvKeys.empty())
         return;
 
+    cout<<"Initial Process\n";
     // This is done only for the first Frame (or after a change in the calibration)
     if(mbInitialComputations)
     {
@@ -199,6 +203,7 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeSt
     UndistortKeyPoints();
     //UndistortKeyLines();
 
+    cout<<"Stereo Matches\n";
     ComputeStereoMatches();
     if(Config::hasLines())
     {
@@ -212,6 +217,7 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeSt
     mvbOutlier = vector<bool>(N,false);
     mvbOutlier_Line = vector<bool>(N_l,false);
 
+    cout<<"Grid assignment\n";
     AssignFeaturesToGrid();
 
     DT = Matrix4d::Identity();

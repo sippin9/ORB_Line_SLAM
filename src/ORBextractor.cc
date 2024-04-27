@@ -414,6 +414,8 @@ ORBextractor::ORBextractor(int _nfeatures, float _scaleFactor, int _nlevels,
     nfeatures(_nfeatures), scaleFactor(_scaleFactor), nlevels(_nlevels),
     iniThFAST(_iniThFAST), minThFAST(_minThFAST)
 {
+    cout<<"point0"<<endl;
+
     mvScaleFactor.resize(nlevels);
     mvLevelSigma2.resize(nlevels);
     mvScaleFactor[0]=1.0f;
@@ -424,6 +426,8 @@ ORBextractor::ORBextractor(int _nfeatures, float _scaleFactor, int _nlevels,
         mvLevelSigma2[i]=mvScaleFactor[i]*mvScaleFactor[i];
     }
 
+    cout<<"point1"<<endl;
+
     mvInvScaleFactor.resize(nlevels);
     mvInvLevelSigma2.resize(nlevels);
     for(int i=0; i<nlevels; i++)
@@ -433,6 +437,8 @@ ORBextractor::ORBextractor(int _nfeatures, float _scaleFactor, int _nlevels,
     }
 
     mvImagePyramid.resize(nlevels);
+
+    cout<<"point2"<<endl;
 
     mnFeaturesPerLevel.resize(nlevels);
     float factor = 1.0f / scaleFactor;
@@ -1051,13 +1057,16 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
     Mat image = _image.getMat();
     assert(image.type() == CV_8UC1 );
 
+    cout<<"Still alive\n";
     // Pre-compute the scale pyramid
     ComputePyramid(image);
 
+    cout<<"Still alive1.3\n";
     vector < vector<KeyPoint> > allKeypoints;
     ComputeKeyPointsOctTree(allKeypoints);
     //ComputeKeyPointsOld(allKeypoints);
 
+    cout<<"Still alive1.5\n";
     Mat descriptors;
 
     int nkeypoints = 0;
@@ -1071,6 +1080,7 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
         descriptors = _descriptors.getMat();
     }
 
+    cout<<"Still alive2\n";
     _keypoints.clear();
     _keypoints.reserve(nkeypoints);
 
@@ -1083,16 +1093,19 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
         if(nkeypointsLevel==0)
             continue;
 
+        cout<<"Still alive3\n";
         // preprocess the resized image
         Mat workingMat = mvImagePyramid[level].clone();
         GaussianBlur(workingMat, workingMat, Size(7, 7), 2, 2, BORDER_REFLECT_101);
 
+        cout<<"Still alive4\n";
         // Compute the descriptors
         Mat desc = descriptors.rowRange(offset, offset + nkeypointsLevel);
         computeDescriptors(workingMat, keypoints, desc, pattern);
 
         offset += nkeypointsLevel;
 
+        cout<<"Still alive5\n";
         // Scale keypoint coordinates
         if (level != 0)
         {
@@ -1101,6 +1114,7 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
                  keypointEnd = keypoints.end(); keypoint != keypointEnd; ++keypoint)
                 keypoint->pt *= scale;
         }
+        cout<<"Still alive6\n";
         // And add the keypoints to the output
         _keypoints.insert(_keypoints.end(), keypoints.begin(), keypoints.end());
     }
@@ -1111,24 +1125,35 @@ void ORBextractor::ComputePyramid(cv::Mat image)
     for (int level = 0; level < nlevels; ++level)
     {
         float scale = mvInvScaleFactor[level];
+        cout<<"Doing0: "<<level<<endl;
         Size sz(cvRound((float)image.cols*scale), cvRound((float)image.rows*scale));
+        cout<<"Doing1: "<<level<<endl;
         Size wholeSize(sz.width + EDGE_THRESHOLD*2, sz.height + EDGE_THRESHOLD*2);
+        cout<<"Doing2: "<<level<<endl;
         Mat temp(wholeSize, image.type()), masktemp;
+        cout<<"Doing3: "<<level<<endl;
         mvImagePyramid[level] = temp(Rect(EDGE_THRESHOLD, EDGE_THRESHOLD, sz.width, sz.height));
+
+        cout<<"Doing4: "<<level<<endl;
 
         // Compute the resized image
         if( level != 0 )
         {
-            resize(mvImagePyramid[level-1], mvImagePyramid[level], sz, 0, 0, INTER_LINEAR);
+            resize(mvImagePyramid[level-1], mvImagePyramid[level], sz, 0, 0, cv::INTER_LINEAR);
+
+            cout<<"Doing5: "<<level<<endl;
 
             copyMakeBorder(mvImagePyramid[level], temp, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
-                           BORDER_REFLECT_101+BORDER_ISOLATED);            
+                           BORDER_REFLECT_101+BORDER_ISOLATED);
+            cout<<"Doing6: "<<level<<endl;
+
         }
         else
         {
             copyMakeBorder(image, temp, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
                            BORDER_REFLECT_101);            
         }
+        //mvImagePyramid[level] = temp;
     }
 
 }
