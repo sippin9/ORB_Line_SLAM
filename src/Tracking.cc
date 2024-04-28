@@ -470,11 +470,7 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRe
         mK,mDistCoef,mbf,mThDepth);
     // cout<<"[Debug] mCurrentFrame.mnId "<<mCurrentFrame.mnId<<endl;
 
-    cout<<"Frame created\n";
-
     Track();
-
-    cout<<"Track ended\n";
 
     return mCurrentFrame.mTcw.clone();
 }
@@ -569,7 +565,6 @@ void Tracking::Track()
             StereoInitializationWithMap();
         else
         {
-            cout << "Not done yet" << endl;
             //MonocularInitializationWithMap();
         }
 
@@ -581,7 +576,6 @@ void Tracking::Track()
     }
     else
     {
-        cout<<"Tracking Initialized"<<endl;
         // System is initialized. Track Frame.
         bool bOK;
 
@@ -766,9 +760,7 @@ void Tracking::Track()
             // Check if we need to insert a new keyframe
             if(NeedNewKeyFrame())
             {
-                cout<<"A key frame needed"<<endl;
                 CreateNewKeyFrame();
-                cout<<"Successfully create a key frame"<<endl;
             }
             // We allow points with high innovation (considererd outliers by the Huber Function)
             // pass to the new keyframe, so that bundle adjustment will finally decide
@@ -1035,10 +1027,8 @@ void Tracking::CreateInitialMapMonocular()
     KeyFrame* pKFini = new KeyFrame(mInitialFrame,mpMap,mpKeyFrameDB);
     KeyFrame* pKFcur = new KeyFrame(mCurrentFrame,mpMap,mpKeyFrameDB);
 
-    cout<<"BoW fail?"<<endl;
     pKFini->ComputeBoW();
     pKFcur->ComputeBoW();
-    cout<<"BoW succeed!"<<endl;
 
     // Insert KFs in the map
     mpMap->AddKeyFrame(pKFini);

@@ -1,7 +1,14 @@
 project( line-descriptor )
 
 cmake_minimum_required(VERSION 2.7)
-find_package( OpenCV 3 REQUIRED)
+find_package(OpenCV 3.4.5)
+if(NOT OpenCV_FOUND)
+	find_package(OpenCV 3)
+	message(Use OpenCV 3)
+	if(NOT OpenCV_FOUND)
+		message(FATAL_ERROR "OpenCV > 3 not found.")
+	endif()
+endif()
 
 if(COMMAND cmake_policy)
   	cmake_policy(SET CMP0003 NEW)	
@@ -11,7 +18,7 @@ include_directories(${OpenCV2_INCLUDE_DIRS})
 
 SET(BUILD_SHARED_LIBS ON)
 SET(CMAKE_MODULE_PATH $ENV{CMAKE_MODULE_PATH})
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -O3 -mtune=native -march=native")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -O3")
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/build)
 set(LIBRARY_OUTPUT_PATH    ${PROJECT_SOURCE_DIR}/lib)

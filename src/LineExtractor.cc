@@ -39,6 +39,7 @@ void Lineextractor::operator()( const cv::Mat& img, const cv::Mat& mask,
 
         if( !bFLD )
         {
+            cout<<"Line Point 1\n";
             Ptr<line_descriptor::LSDDetectorC> lsd = line_descriptor::LSDDetectorC::createLSDDetectorC();
             // lsd parameters
             line_descriptor::LSDDetectorC::LSDOptions opts;
@@ -51,19 +52,26 @@ void Lineextractor::operator()( const cv::Mat& img, const cv::Mat& mask,
             opts.density_th   = lsd_density_th;
             opts.n_bins       = lsd_n_bins;
             opts.min_length   = min_line_length*(std::min(img.cols,img.rows));
-            lsd->detect( img, keylines, lsd_scale, 1, opts);
+
+            cout<<"Line Point 2\n";
+            // lsd->detect( img, keylines, lsd_scale, 1, opts);
             // filter keylines
             if( int(keylines.size())>lsd_nfeatures && lsd_nfeatures!=0  )
             {
+                cout<<"Line Point 3\n";
                 // sort keylines by their response
                 sort( keylines.begin(), keylines.end(), sort_lines_by_response() );
+
+                cout<<"Line Point 4\n";
                 //sort( keylines.begin(), keylines.end(), sort_lines_by_length() );
                 keylines.resize(lsd_nfeatures);
                 // reassign index
                 for( int i = 0; i < lsd_nfeatures; i++  )
                     keylines[i].class_id = i;
             }
+            cout<<"Line Point 5\n";
             lbd->compute( img, keylines, descriptors_line);
+            cout<<"Line Point 6\n";
         }
         else return;
         /*
